@@ -11,6 +11,7 @@
   color-scheme:light;
 }
 [hidden]{display:none!important;}
+*,*::before,*::after{box-sizing:border-box;}
 html,body{height:100%;margin:0;}
 body{background:var(--sky);color:var(--ink);font-family:var(--font-body);overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
 #stage{position:fixed;inset:0;}
@@ -22,11 +23,33 @@ body{background:var(--sky);color:var(--ink);font-family:var(--font-body);overflo
 .goal{padding:6px 10px;}
 .goal small{display:block;font-size:10px;letter-spacing:.06em;color:var(--steel);font-weight:700;}
 .goal b{display:block;font-size:14px;line-height:1.35;}
-.nav{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;align-self:flex-start;}
+.nav{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 6px;align-self:flex-start;background:var(--sun);}
+.hintTxt{font-size:15px;font-weight:900;line-height:1.25;}
+.cmdpanel{padding:6px 8px;display:flex;flex-direction:column;gap:2px;align-self:flex-start;max-width:150px;pointer-events:none;}
+.cmdpanel h3{margin:0 0 2px;font-size:10px;letter-spacing:.08em;color:var(--steel);font-weight:900;}
+.cmdrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;line-height:1.35;padding:1px 5px;border-radius:7px;}
+.cmdrow b{font-weight:900;white-space:nowrap;}
+.cmdrow span{color:var(--steel);font-size:10px;white-space:nowrap;}
+.cmdrow.hot{background:var(--ink);color:var(--paper);}
+.cmdrow.hot span{color:var(--sun);}
+.gatePrompt{font-weight:900;font-size:14px;padding:8px 12px;background:var(--sun);text-align:center;max-width:560px;width:100%;}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.mode{border:3px solid var(--ink);border-radius:16px;padding:12px 10px;background:var(--cream);text-align:left;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:4px;box-shadow:0 4px 0 var(--ink);}
+.mode b{font-size:17px;}
+.mode span{font-size:12px;color:var(--steel);line-height:1.45;}
+.mode em{font-style:normal;font-size:12px;font-weight:900;color:var(--tomato);}
+.mode:focus-visible{outline:3px solid var(--tomato);outline-offset:2px;}
+#pigeon{position:fixed;left:50%;top:44%;width:min(70vw,360px);aspect-ratio:1.3;transform:translate(-50%,-50%) rotate(-8deg);pointer-events:none;z-index:3;}
+#pigeon .body{position:absolute;inset:18% 10% 10% 8%;background:#8a93a8;border-radius:50% 55% 45% 50%;border:5px solid var(--ink);}
+#pigeon .head{position:absolute;left:62%;top:2%;width:30%;aspect-ratio:1;background:#6f7891;border-radius:50%;border:5px solid var(--ink);}
+#pigeon .eye{position:absolute;left:70%;top:14%;width:9%;aspect-ratio:1;background:#fff;border-radius:50%;border:3px solid var(--ink);}
+#pigeon .beak{position:absolute;left:88%;top:20%;width:12%;height:8%;background:var(--sun);border:3px solid var(--ink);border-radius:0 60% 60% 0;}
+#pigeon .wing{position:absolute;left:18%;top:34%;width:46%;height:36%;background:#a7afc2;border:5px solid var(--ink);border-radius:60% 40% 60% 40%;}
+@media (max-height:560px){ .cmdpanel{display:none;} }
 .arrow{width:42px;height:42px;border-radius:50%;background:var(--mint);display:grid;place-items:center;border:3px solid var(--ink);flex:none;}
 .arrow svg{width:24px;height:24px;}
 .navtxt{display:flex;flex-direction:column;line-height:1.1;}
-.navtxt b{font-family:var(--font-display);font-size:19px;font-variant-numeric:tabular-nums;}
+.navtxt b{font-family:var(--font-display);font-size:14px;font-variant-numeric:tabular-nums;}
 .navtxt span{font-size:11px;color:var(--steel);}
 .chips{display:flex;gap:6px;flex-wrap:wrap;}
 .chip{padding:3px 9px;font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;border-radius:10px;}
@@ -90,9 +113,10 @@ body{background:var(--sky);color:var(--ink);font-family:var(--font-body);overflo
     <div class="panel goal"><small id="goalLbl">自由駕駛</small><b id="goalTxt">開到旗子的位置挑戰關卡</b></div>
     <div class="panel nav">
       <div class="arrow"><svg id="arrowSvg" viewBox="0 0 24 24"><path d="M12 2 L20 20 L12 15 L4 20 Z" fill="#fffaf0" stroke="#1d2340" stroke-width="2" stroke-linejoin="round"/></svg></div>
-      <div class="navtxt"><b id="dist">0 m</b><span id="distLbl">下一個目標</span></div>
+      <div class="navtxt"><span class="hintTxt" id="hintTxt">說「開車」起步</span><span><b id="dist">0 m</b> · <span id="distLbl">下一個目標</span></span></div>
     </div>
     <div class="chips" id="chips"></div>
+    <div class="panel cmdpanel" id="cmdPanel" hidden><h3 id="cmdTitle">你可以說</h3><div id="cmdRows"></div></div>
   </div>
   <div class="right-col">
     <div class="panel lang" role="group" aria-label="Language"><button id="lzh" aria-pressed="true">中文</button><button id="len" aria-pressed="false">EN</button></div>
@@ -106,6 +130,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--font-body);overflo
     <div class="bubble panel" id="bubble" data-who="學員">……</div>
     <div class="heard" id="heard"></div>
   </div>
+  <div class="panel gatePrompt" id="gatePrompt" hidden></div>
   <div class="notice" id="notice" hidden></div>
   <div class="voice panel" id="voice"><span class="dot"></span><span id="voiceTxt">語音未啟動</span></div>
 </div>
@@ -117,6 +142,20 @@ body{background:var(--sky);color:var(--ink);font-family:var(--font-body);overflo
     <dl class="cmds" id="cmdList"></dl>
     <p id="tVoice" style="font-size:12px;color:var(--steel)"></p>
     <div class="say" id="tTap"></div>
+  </div>
+</div>
+
+<div id="pigeon" hidden><div class="wing"></div><div class="body"></div><div class="head"></div><div class="eye"></div><div class="beak"></div></div>
+
+<div class="overlay" id="modeCard" hidden>
+  <div class="card">
+    <div class="eyebrow" id="mcEyebrow">選擇模式</div>
+    <h2 id="mcTitle">今天要怎麼教？</h2>
+    <div class="modes">
+      <button class="mode" id="mLesson"><b id="mLessonT">駕訓班模式</b><span id="mLessonD"></span><em id="mLessonP"></em></button>
+      <button class="mode" id="mFree"><b id="mFreeT">自由探索模式</b><span id="mFreeD"></span><em id="mFreeP"></em></button>
+    </div>
+    <div class="say" id="mcSay"></div>
   </div>
 </div>
 
@@ -173,10 +212,10 @@ const T={
  zh:{
   student:"學員", free:"自由駕駛", freeGoal:"開到旗子位置挑戰關卡", next:"下一個目標", gate:"關卡入口",
   title:"崩潰教練", sub:"PANIC COACH",
-  desc:"你是駕訓班教練，坐在副駕只能用嘴巴教學員開車。四位學員各有毛病，帶他們通過駕訓場、城市路考、特殊挑戰和搞笑關，一共 14 關。在大地圖上開到旗子的位置就能進入關卡。",
+  desc:"你是駕訓班教練，坐在副駕只能用嘴巴教學員開車。四位學員各有毛病。可以選「駕訓班模式」照順序考 14 關，或「自由探索模式」在大地圖上亂開、收集珍奶。畫面左邊會一直顯示可以說的指令，黃色提示會告訴你下一步。",
   voiceNote:"這個遊戲只能用語音操作，需要 Chrome 和麥克風權限。",
   tap:"<em>點一下畫面</em>開始，並允許麥克風。",
-  cmds:[["開車 / 前進","起步"],["加速 / 慢一點","換檔"],["停 / 煞車","停下"],["左轉 / 右轉","轉 90 度"],["靠左 / 靠右","微調方向"],["直走","取消轉彎"],["倒車","往後退"],["按喇叭","嚇走動物"],["醒醒","叫醒學員"],["安靜 / 說話","學員閉嘴或開口"]],
+  cmds:[["開車 / 前進","起步"],["加速 / 慢一點","換檔"],["停 / 煞車","停下"],["左轉 / 右轉","轉 90 度"],["靠左 / 靠右","微調方向"],["直走","取消轉彎"],["倒車","往後退"],["按喇叭","嚇走動物"],["醒醒","叫醒學員"],["專心 / 冷靜","處理突發狀況"],["挑戰","進入旗子關卡"],["選單","切換模式"]],
   cardSay:"說<em>「開始」</em>進入關卡，說<em>「取消」</em>離開。",
   cardTap:"也可以點一下卡片開始",
   resSayWin:"說<em>「下一關」</em>、<em>「重來」</em>或<em>「回地圖」</em>。",
@@ -197,10 +236,10 @@ const T={
  en:{
   student:"STUDENT", free:"Free drive", freeGoal:"Drive to a flag to start a level", next:"next goal", gate:"level gate",
   title:"Panic Coach", sub:"崩潰教練",
-  desc:"You're a driving instructor stuck in the passenger seat, and your voice is the only control. Four students, each with a bad habit, need to pass 14 levels: the practice yard, city road tests, special challenges and silly ones. Drive to a flag on the big map to start a level.",
+  desc:"You're a driving instructor stuck in the passenger seat, and your voice is the only control. Four students, each with a bad habit. Pick Driving School to take the 14 levels in order, or Free Roam to cruise the big map and collect bubble tea. The left panel always lists what you can say, and the yellow hint tells you what to do next.",
   voiceNote:"This game is voice-only. It needs Chrome and microphone access.",
   tap:"<em>Tap the screen</em> to begin and allow the microphone.",
-  cmds:[["go / drive","start"],["faster / slower","change gear"],["stop / brake","stop"],["left / right","turn 90°"],["a bit left / right","small nudge"],["straight","cancel a turn"],["reverse","back up"],["honk","scare animals"],["wake up","wake the student"],["quiet / talk","mute or unmute the student"]],
+  cmds:[["go / drive","start"],["faster / slower","change gear"],["stop / brake","stop"],["left / right","turn 90°"],["a bit left / right","small nudge"],["straight","cancel a turn"],["reverse","back up"],["honk","scare animals"],["wake up","wake the student"],["focus / calm down","handle surprises"],["challenge","enter a flag level"],["menu","switch mode"]],
   cardSay:"Say <em>\"start\"</em> to begin or <em>\"cancel\"</em> to leave.",
   cardTap:"You can also tap the card to start",
   resSayWin:"Say <em>\"next\"</em>, <em>\"retry\"</em> or <em>\"map\"</em>.",
@@ -256,6 +295,57 @@ const SLINES={
 };
 const VOICE={dou:{pitch:1.6,rate:0.85},rush:{pitch:0.9,rate:1.35},daisy:{pitch:1.4,rate:1.1},zzz:{pitch:0.6,rate:0.75}};
 const L=()=>T[lang];
+const UI={
+ zh:{
+  modeEyebrow:"選擇模式", modeTitle:"今天要怎麼教？",
+  lessonT:"駕訓班模式", lessonD:"14 關照順序考，過一關接下一關，不用自己找路。",
+  freeT:"自由探索模式", freeD:"在大地圖上亂開、收集珍奶、撞飛垃圾桶，看到旗子可以挑戰關卡。",
+  progress:(a,b)=>"已過關 "+a+"/"+b, cups:(a,b)=>"珍奶 "+a+"/"+b,
+  modeSay:"說<em>「駕訓班」</em>或<em>「自由探索」</em>，也可以點選上面的卡片。之後隨時說<em>「選單」</em>回到這裡。",
+  freeGoalT:"自由探索", freeGoal:"跟著黃色箭頭去收集珍奶，或開到旗子說「挑戰」。",
+  cmdTitle:"你可以說",
+  rows:{go:["開車","起步"],faster:["加速","換高檔"],slower:["慢一點","換低檔"],stop:["停","煞車"],left:["左轉","轉 90°"],right:["右轉","轉 90°"],nudgeL:["靠左","微調"],nudgeR:["靠右","微調"],straight:["直走","取消轉彎"],reverse:["倒車","往後"],honk:["按喇叭","嚇動物、趕鴿子"],wake:["醒醒","叫醒學員"],focus:["專心","別自拍"],calm:["冷靜","別慌"],sing:["唱歌","學員唱歌"],challenge:["挑戰","進入關卡"],menu:["選單","換模式"]},
+  hStart:"說「開車」起步", hStraight:"直直開，說「加速」會快一點", hNowL:"現在說「左轉」！", hNowR:"現在說「右轉」！",
+  hAheadL:d=>"前方路口左轉（"+d+" m）", hAheadR:d=>"前方路口右轉（"+d+" m）", hNudgeL:"說「靠左」對準目標", hNudgeR:"說「靠右」對準目標",
+  hBehind:"目標在後面：說「倒車」，或連轉兩次彎", hBox:"進白框後說「停」", hHold:"停住別動…", hReverse:"說「倒車」退進去，進去後說「停」",
+  hGate:(n,t)=>"第 "+n+" 關「"+t+"」— 說「挑戰」開始", hSleep:"學員睡著了！說「醒醒」", hSelfie:"學員在自拍！說「專心」", hBee:"車裡有蜜蜂！說「冷靜」", hPigeon:"鴿子擋住視線！說「按喇叭」",
+  hRed:"紅燈！說「停」", hPed:"有行人！說「停」", hAmb:"救護車來了！說「靠右」或「停」", hDuck:"有鴿子…是鴿子嗎？是鴨子！說「按喇叭」",
+  gateWord:"關卡入口", allDone:"14 關全部完成！你是傳說中的崩潰教練。", cupGet:"拿到珍奶！", cupsAll:"珍奶全收集！學員胖了兩公斤。", binHit:n=>"撞飛垃圾桶 ×"+n,
+  resLesson:"說<em>「下一關」</em>、<em>「重來」</em>，或<em>「選單」</em>換模式。", resLessonLose:"說<em>「重來」</em>再試，或<em>「選單」</em>換模式。",
+  resTapLesson:"點一下卡片繼續",
+ },
+ en:{
+  modeEyebrow:"CHOOSE A MODE", modeTitle:"How are we teaching today?",
+  lessonT:"Driving School", lessonD:"All 14 levels in order. Pass one and the next starts. No map hunting.",
+  freeT:"Free Roam", freeD:"Cruise the big map, collect bubble tea, launch trash cans, and challenge levels at the flags.",
+  progress:(a,b)=>"Passed "+a+"/"+b, cups:(a,b)=>"Tea "+a+"/"+b,
+  modeSay:"Say <em>\"driving school\"</em> or <em>\"free roam\"</em>, or tap a card. Say <em>\"menu\"</em> anytime to come back.",
+  freeGoalT:"Free roam", freeGoal:"Follow the yellow arrow to bubble tea, or say \"challenge\" at a flag.",
+  cmdTitle:"YOU CAN SAY",
+  rows:{go:["go","start"],faster:["faster","gear up"],slower:["slower","gear down"],stop:["stop","brake"],left:["left","turn 90°"],right:["right","turn 90°"],nudgeL:["a bit left","nudge"],nudgeR:["a bit right","nudge"],straight:["straight","cancel turn"],reverse:["reverse","back up"],honk:["honk","scare animals"],wake:["wake up","wake student"],focus:["focus","stop the selfie"],calm:["calm down","stop panic"],sing:["sing","student sings"],challenge:["challenge","enter level"],menu:["menu","switch mode"]},
+  hStart:"Say \"go\" to start", hStraight:"Keep going. \"Faster\" speeds up", hNowL:"Say \"left\" now!", hNowR:"Say \"right\" now!",
+  hAheadL:d=>"Turn left at the next junction ("+d+" m)", hAheadR:d=>"Turn right at the next junction ("+d+" m)", hNudgeL:"Say \"a bit left\" to line up", hNudgeR:"Say \"a bit right\" to line up",
+  hBehind:"Target is behind: say \"reverse\" or turn twice", hBox:"Say \"stop\" inside the white box", hHold:"Hold still…", hReverse:"Say \"reverse\" to back in, then \"stop\"",
+  hGate:(n,t)=>"Level "+n+" \""+t+"\": say \"challenge\"", hSleep:"Student asleep! Say \"wake up\"", hSelfie:"Selfie time?! Say \"focus\"", hBee:"Bee in the car! Say \"calm down\"", hPigeon:"Pigeon on the glass! Say \"honk\"",
+  hRed:"Red light! Say \"stop\"", hPed:"Pedestrian! Say \"stop\"", hAmb:"Ambulance! Pull right or stop", hDuck:"Ducks ahead! Say \"honk\"",
+  gateWord:"level gate", allDone:"All 14 levels done! You are the legendary Panic Coach.", cupGet:"Bubble tea!", cupsAll:"All bubble tea collected! The student gained two kilos.", binHit:n=>"Trash cans launched ×"+n,
+  resLesson:"Say <em>\"next\"</em>, <em>\"retry\"</em>, or <em>\"menu\"</em>.", resLessonLose:"Say <em>\"retry\"</em> or <em>\"menu\"</em>.",
+  resTapLesson:"Tap the card to continue",
+ }
+};
+const U=()=>UI[lang];
+Object.assign(LINES.zh,{
+  sneeze:["哈…哈…哈啾！","哈啾！對不起方向盤！"], selfie:["等一下，我拍一張限動～","教練看鏡頭！耶～"], focus:["好啦好啦，看路看路。","專心模式啟動！"], noFocus:["我很專心啊？"],
+  pigeon:["啊！鴿子！牠在看我！","鴿子大哥你下去啦！"], pigeonGone:["鴿子飛走了，好險。"], bee:["蜜蜂！！！車裡有蜜蜂！！","牠在我耳朵旁邊！！"], calm:["呼…吸…好，我冷靜了。","深呼吸…深呼吸…"], noCalm:["我很冷靜啊，你才冷靜咧。"],
+  sing:["啦啦啦～我是開車小天才～方向盤轉轉轉～","教練教得好～撞牆也不怕～"], cheer:["真的嗎！我會加油！","被稱讚了，嘿嘿。"], snack:["教練，我可以邊開邊吃雞排嗎？","等一下可以停便利商店嗎？"],
+  cup:["珍奶！好喝！","又一杯！我今天不用吃飯了。"], bin:["垃圾桶飛起來了！","那個不是我撞的，是它自己跳的。"], gate:["要挑戰這關嗎？說「挑戰」就開始喔。"],
+});
+Object.assign(LINES.en,{
+  sneeze:["Ah… ah… ACHOO!","ACHOO! Sorry, steering wheel!"], selfie:["Hold on, quick selfie for my story~","Coach, look at the camera!"], focus:["Okay okay, eyes on the road.","Focus mode on!"], noFocus:["I am focused?"],
+  pigeon:["A pigeon! It's staring at me!","Mr. Pigeon, please get off!"], pigeonGone:["The pigeon flew away. Phew."], bee:["BEE! THERE'S A BEE IN THE CAR!","It's next to my ear!!"], calm:["Breathe in… breathe out… okay.","Deep breaths… deep breaths…"], noCalm:["I'm calm. YOU calm down."],
+  sing:["La la la~ I'm a driving genius~ the wheel goes round and round~","Coach is the best~ walls are no big deal~"], cheer:["Really? I'll do my best!","You complimented me, hehe."], snack:["Coach, can I eat fried chicken while driving?","Can we stop at the convenience store?"],
+  cup:["Bubble tea! Yum!","Another one! I'm skipping dinner."], bin:["The trash can is flying!","I didn't hit that. It jumped."], gate:["Want to try this level? Say \"challenge\"."],
+});
 
 /* ======================= LEVELS (data) ======================= */
 const H0=0, HE=Math.PI/2; // heading +z, +x
@@ -514,12 +604,13 @@ const gates=LEVELS.map(lv=>{
   scene.add(grp);
   return {lv,x:gx,z:gz,grp,ring,sprite:null};
 });
-function gateUnlocked(id){ return CH_START.includes(id) || (stars[id-1]||0)>0; }
+let gameMode="free";
+function gateUnlocked(id){ return gameMode==="free" || id===1 || (stars[id-1]||0)>0; }
 function refreshGates(){
   gates.forEach(g=>{
     const id=g.lv.id, s=stars[id]||0, open=gateUnlocked(id);
     if(g.sprite){g.grp.remove(g.sprite);}
-    const label = s ? id+" "+"★".repeat(s) : (open? String(id) : id+" ✕");
+    const label = s ? id+" "+"★".repeat(s) : String(id);
     g.sprite=textSprite(label, open?(s?"#2fbf8f":"#ffc93c"):"#b8b3a6", s?"#ffffff":"#1d2340", s?384:256);
     g.sprite.position.set(4.5,8.2,0); g.grp.add(g.sprite);
     g.ring.material.color.setHex(open?(s?0x2fbf8f:0xffc93c):0x9a968c);
@@ -528,6 +619,43 @@ function refreshGates(){
 let stars={}; try{ stars=JSON.parse(localStorage.getItem("panicCoachStars")||"{}")||{}; }catch(_){ stars={}; }
 function saveStars(){ try{ localStorage.setItem("panicCoachStars",JSON.stringify(stars)); }catch(_){} }
 refreshGates();
+
+/* ======================= FREE-ROAM PROPS ======================= */
+const cups=[], bins=[];
+{
+  const cupMat=mat(0xf3d9b1), lidMat=mat(0xffffff), strawMat=mat(0xff5a4e), pearlMat=mat(0x3a2418);
+  const spots=[]; for(let i=-GRID;i<=GRID;i++) for(let j=-GRID;j<GRID;j++){ spots.push([i*BLOCK+(j%2?2.5:-2.5), j*BLOCK+30]); spots.push([j*BLOCK+30, i*BLOCK+(i%2?2.5:-2.5)]); }
+  let r=97; const rr=()=>{r=(r*16807)%2147483647;return (r-1)/2147483646;};
+  const chosen=[]; while(chosen.length<15){ const sp=spots[Math.floor(rr()*spots.length)]; if(inYard(sp[0],sp[1])) continue; if(chosen.some(c=>Math.hypot(c[0]-sp[0],c[1]-sp[1])<50)) continue; chosen.push(sp); }
+  chosen.forEach(([x,z])=>{
+    const g=new THREE.Group(); const c=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.7,2,14),cupMat); c.position.y=1; g.add(c);
+    const lid=new THREE.Mesh(new THREE.CylinderGeometry(0.95,0.95,0.15,14),lidMat); lid.position.y=2.05; g.add(lid);
+    const straw=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,1.4,8),strawMat); straw.position.set(0.2,2.6,0); straw.rotation.z=-0.2; g.add(straw);
+    for(let k=0;k<5;k++){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.18,6,5),pearlMat); p.position.set(Math.cos(k)*0.45,0.3,Math.sin(k)*0.45); g.add(p); }
+    g.position.set(x,1.2,z); g.scale.setScalar(1.4); scene.add(g); cups.push({g,x,z,got:false});
+  });
+  const binMat=mat(0x2f9e6b), binLid=mat(0x1f6e4a);
+  for(let i=0;i<40;i++){
+    const k=Math.floor(rr()*(GRID*2+1))-GRID, along=(rr()-.5)*EDGE*1.8, side=(rr()<0.5?-1:1)*(HALF-2.8);
+    const m=((along%BLOCK)+BLOCK)%BLOCK; if(m<HALF+3||m>BLOCK-HALF-3) continue;
+    const x= i%2? k*BLOCK+side : along, z= i%2? along : k*BLOCK+side; if(inYard(x,z)) continue;
+    const g=new THREE.Group(); const b=new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.45,1.3,10),binMat); b.position.y=0.65; g.add(b);
+    const l=new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,0.15,10),binLid); l.position.y=1.35; g.add(l);
+    g.position.set(x,0,z); scene.add(g); bins.push({g,home:{x,z},vel:null,spin:0,t:0});
+  }
+}
+let cupsGot=0; try{ cupsGot=0; }catch(_){}
+let binsHit=0;
+/* target diamond + arrow over the car */
+const targetMark=new THREE.Group();
+const targetDiamond=new THREE.Mesh(new THREE.OctahedronGeometry(1.6,0),new THREE.MeshBasicMaterial({color:0xffc93c}));
+{ const d=targetDiamond; d.position.y=12; targetMark.add(d);
+  const beamM=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,40,10,1,true),new THREE.MeshBasicMaterial({color:0xffc93c,transparent:true,opacity:0.35,side:THREE.DoubleSide,depthWrite:false})); beamM.position.y=20; targetMark.add(beamM); }
+scene.add(targetMark);
+const carArrow=new THREE.Group();
+{ const m=new THREE.MeshBasicMaterial({color:0xffc93c}); const head=new THREE.Mesh(new THREE.ConeGeometry(0.9,1.8,4),m); head.rotation.x=Math.PI/2; head.position.z=1.4; carArrow.add(head);
+  const tail=new THREE.Mesh(box(0.6,0.3,1.8),m); tail.position.z=0; carArrow.add(tail); }
+scene.add(carArrow);
 
 /* ======================= LEVEL OBJECTS ======================= */
 const levelGroup=new THREE.Group(); scene.add(levelGroup);
@@ -656,7 +784,7 @@ function setLang(l){ if(l===lang) return; lang=l; applyLang(); if(listening){ st
 $("lzh").addEventListener("click",()=>setLang("zh")); $("len").addEventListener("click",()=>setLang("en"));
 function updateGoal(){
   if(lvl.def){ $("goalLbl").textContent=L().levelN(lvl.def.id)+" · "+lvl.def[lang].t; $("goalTxt").textContent=lvl.def[lang].g; }
-  else { $("goalLbl").textContent=L().free; $("goalTxt").textContent=L().freeGoal; }
+  else { $("goalLbl").textContent=U().freeGoalT; $("goalTxt").textContent=U().freeGoal; }
 }
 
 /* ======================= CARDS ======================= */
@@ -672,7 +800,7 @@ function startLevel(lv){
   buildLevel(lv); setStudent(lv.st);
   const [x,z,h]=lv.start; Object.assign(st,{x,z,heading:h,speed:0,idx:0,reverse:false,turnLeft:0,cooldown:0,asleep:false,sleepT:6+Math.random()*3,lastSlow:0,autoT:0});
   camPos.set(x-Math.sin(h)*12,6.5,z-Math.cos(h)*12);
-  lvl.ambDone=[]; st.mode="level"; st.pendingGate=null; st.gateLock=null;
+  lvl.ambDone=[]; st.mode="level"; st.pendingGate=null; st.gateLock=null; st.nearGate=null; clearEvents(); $("gatePrompt").hidden=true; st.eventT=22+Math.random()*12;
   npcs.forEach(n=>n.car.visible=false);
   $("distLbl").textContent=L().next; updateGoal(); say("start");
 }
@@ -686,11 +814,14 @@ function endLevel(win,reason){
   $("rcStars").innerHTML=[0,1,2].map(i=>'<span class="'+(i<s?"":"off")+'">★</span>').join("");
   $("rcTime").textContent=fmt(lvl.time); $("rcPen").textContent=lvl.pen; $("rcTimeL").textContent=t.time; $("rcPenL").textContent=t.pen;
   $("rcLine").textContent=win?t.rate(s):t.rateFail;
-  $("rcSay").innerHTML=win?t.resSayWin:t.resSayLose; $("rcTap").textContent=t.resTap;
+  if(gameMode==="lesson"){ $("rcSay").innerHTML=win?U().resLesson:U().resLessonLose; $("rcTap").textContent=U().resTapLesson; }
+  else { $("rcSay").innerHTML=win?t.resSayWin:t.resSayLose; $("rcTap").textContent=t.resTap; }
+  clearEvents();
   st.lastWin=win;
   setTimeout(()=>{ if(st.mode==="result") $("resultCard").hidden=false; },700);
 }
 function backToMap(){
+  if(gameMode==="lesson"){ showModeCard(); return; }
   $("resultCard").hidden=true; $("levelCard").hidden=true;
   const lv=lvl.def; clearLevel();
   if(lv){ const [sx,sz,sh]=lv.start; Object.assign(st,{x:sx-Math.sin(sh)*4,z:sz-Math.cos(sh)*4,heading:sh}); st.gateLock=lv.id; }
@@ -698,9 +829,30 @@ function backToMap(){
   npcs.forEach(n=>n.car.visible=true);
   $("distLbl").textContent=L().gate; updateGoal();
 }
-function nextLevel(){ const lv=lvl.def; const nx=LEVELS.find(l=>l.id===lv.id+1); if(nx && gateUnlocked(nx.id)){ startLevel(nx); } else backToMap(); }
+function nextLevel(){ const lv=lvl.def; const nx=LEVELS.find(l=>l.id===lv.id+1);
+  if(!nx){ toast(U().allDone,true); showModeCard(); return; }
+  if(gateUnlocked(nx.id)) startLevel(nx); else backToMap(); }
+function passedCount(){ return LEVELS.filter(l=>stars[l.id]).length; }
+function showModeCard(){
+  const u=U(); clearLevel(); clearEvents(); $("levelCard").hidden=true; $("resultCard").hidden=true; $("gatePrompt").hidden=true;
+  $("mcEyebrow").textContent=u.modeEyebrow; $("mcTitle").textContent=u.modeTitle;
+  $("mLessonT").textContent=u.lessonT; $("mLessonD").textContent=u.lessonD; $("mLessonP").textContent=u.progress(passedCount(),LEVELS.length);
+  $("mFreeT").textContent=u.freeT; $("mFreeD").textContent=u.freeD; $("mFreeP").textContent=u.cups(cupsGot,cups.length);
+  $("mcSay").innerHTML=u.modeSay; $("modeCard").hidden=false; st.mode="modeSel"; Object.assign(st,{speed:0,idx:0,reverse:false,turnLeft:0});
+}
+function startLesson(){
+  gameMode="lesson"; $("modeCard").hidden=true; refreshGates();
+  const lv=LEVELS.find(l=>!stars[l.id])||LEVELS[0]; startLevel(lv);
+}
+function startFree(){
+  gameMode="free"; $("modeCard").hidden=true; refreshGates(); clearLevel();
+  Object.assign(st,{x:SPAWN.x,z:SPAWN.z,heading:0,speed:0,idx:0,reverse:false,turnLeft:0,asleep:false,gateLock:null,nearGate:null,eventT:20+Math.random()*10});
+  camPos.set(SPAWN.x,8,SPAWN.z-14); setStudent(pick(Object.keys(STUDENTS))); st.mode="roam";
+  npcs.forEach(n=>n.car.visible=true); updateGoal(); say("start");
+}
+$("mLesson").addEventListener("click",startLesson); $("mFree").addEventListener("click",startFree);
 $("levelCard").addEventListener("click",()=>{ if(st.mode==="card"&&st.pendingGate) startLevel(st.pendingGate.lv); });
-$("resultCard").addEventListener("click",()=>{ if(st.mode==="result") backToMap(); });
+$("resultCard").addEventListener("click",()=>{ if(st.mode!=="result") return; if(gameMode==="lesson"){ if(st.lastWin) nextLevel(); else startLevel(lvl.def); } else backToMap(); });
 
 /* ======================= COMMANDS ======================= */
 const TRAITS={
@@ -711,8 +863,15 @@ function command(cmd,fromVoice){
   if(cmd==="honk"){ honk(); return; }
   if(cmd==="hush"){ say("hush"); setTimeout(()=>{ muted=true; },1600); return; }
   if(cmd==="talk"){ muted=false; say("talk"); return; }
-  if(st.mode==="card"){ if(cmd==="mStart"||cmd==="go") startLevel(st.pendingGate.lv); else if(cmd==="mCancel"||cmd==="stop"){ $("levelCard").hidden=true; st.mode="roam"; st.gateLock=st.pendingGate.lv.id; st.pendingGate=null; } return; }
-  if(st.mode==="result"){ if(cmd==="mRetry") startLevel(lvl.def); else if(cmd==="mNext"&&st.lastWin) nextLevel(); else if(cmd==="mMap"||cmd==="mCancel"||cmd==="mNext") backToMap(); return; }
+  if(cmd==="mMenu"){ if(st.mode!=="intro") showModeCard(); return; }
+  if(st.mode==="modeSel"){ if(cmd==="mLesson") startLesson(); else if(cmd==="mFree") startFree(); return; }
+  if(cmd==="sing"){ say("sing"); return; }
+  if(cmd==="cheer"){ say("cheer"); st.panic=Math.max(0,st.panic-0.3); return; }
+  if(cmd==="challenge"&&st.mode!=="card"){ if(st.mode==="roam"&&st.nearGate){ st.idx=0; st.turnLeft=0; st.pendingGate=st.nearGate; $("gatePrompt").hidden=true; showLevelCard(st.nearGate.lv); } return; }
+  if(cmd==="focus"){ if(st.selfieT>0){ st.selfieT=0; say("focus"); } else say("noFocus"); return; }
+  if(cmd==="calm"){ if(st.beeT>0){ st.beeT=0; st.idx=Math.min(st.idx,2); say("calm"); } else say("noCalm"); return; }
+  if(st.mode==="card"){ if(cmd==="mStart"||cmd==="go"||cmd==="challenge") startLevel(st.pendingGate.lv); else if(cmd==="mCancel"||cmd==="stop"){ $("levelCard").hidden=true; st.mode="roam"; st.gateLock=st.pendingGate.lv.id; st.pendingGate=null; } return; }
+  if(st.mode==="result"){ if(cmd==="mRetry") startLevel(lvl.def); else if(cmd==="mNext"&&st.lastWin) nextLevel(); else if(cmd==="mNext"&&gameMode==="lesson") startLevel(lvl.def); else if(cmd==="mMap"||cmd==="mCancel"||cmd==="mNext") backToMap(); return; }
   if(st.mode==="level"&&(cmd==="mQuit")){ backToMap(); return; }
   if(st.mode==="level"&&(cmd==="mRetry")){ startLevel(lvl.def); return; }
   if(st.mode!=="roam"&&st.mode!=="level") return;
@@ -767,9 +926,23 @@ const ZH=[
   [/醒醒|醒來|醒来|起床|醒/g,"wake"],
   [/安靜|安静|閉嘴|闭嘴|不要講話|不要讲话/g,"hush"],
   [/可以講話|可以讲话|說話|说话|講話|讲话/g,"talk"],
+  [/選單|选单|菜單|菜单|切換模式|切换模式|換模式|换模式|主畫面|主画面/g,"mMenu"],
+  [/挑戰|挑战|進入關卡|进入关卡|開始關卡|开始关卡/g,"challenge"],
+  [/專心|专心|看路|看前面|不要自拍|別自拍|别自拍/g,"focus"],
+  [/冷靜|冷静|深呼吸|別怕|别怕|不要怕|不要慌|別慌|别慌/g,"calm"],
+  [/唱歌|唱首歌|來首歌|来首歌/g,"sing"],
+  [/加油|很棒|好棒|做得好|厲害|厉害/g,"cheer"],
   [/放棄|放弃|不玩了|退出|回地圖|回地图/g,"mQuit"],
   [/重來|重来|重新開始|重新开始/g,"mRetry"],
   [/前進|前进|開車|开车|出發|出发|走吧|走|開|开/g,"go"],
+];
+const ZH_MODE=[
+  [/駕訓|驾训|考照|訓練|训练|關卡模式|关卡模式|第一個|第一个/g,"mLesson"],
+  [/自由|探索|兜風|兜风|亂開|乱开|第二個|第二个/g,"mFree"],
+];
+const EN_MODE=[
+  [/\bdriving school\b|\bschool\b|\blessons?\b|\blevels?\b|\bfirst\b/g,"mLesson"],
+  [/\bfree( roam)?\b|\bexplore\b|\broam\b|\bsecond\b/g,"mFree"],
 ];
 const ZH_MENU=[
   [/下一關|下一关|下一個|下一个/g,"mNext"],
@@ -790,6 +963,12 @@ const EN=[
   [/\bwake( up)?\b/g,"wake"],
   [/\bquiet\b|\bshut up\b|\bhush\b/g,"hush"],
   [/\byou can talk\b|\btalk\b|\bspeak\b/g,"talk"],
+  [/\bmenu\b|\bswitch mode\b|\bchange mode\b/g,"mMenu"],
+  [/\bchallenge\b|\benter level\b/g,"challenge"],
+  [/\bfocus\b|\beyes on the road\b|\bno selfies?\b/g,"focus"],
+  [/\bcalm( down)?\b|\bbreathe\b|\bdon'?t panic\b/g,"calm"],
+  [/\bsing\b|\bsong\b/g,"sing"],
+  [/\bgood job\b|\bnice\b|\bwell done\b|\byou can do it\b/g,"cheer"],
   [/\bquit\b|\bgive up\b/g,"mQuit"],
   [/\brestart\b/g,"mRetry"],
   [/\bgo\b|\bdrive\b|\bforward\b|\bmove\b|\bstart\b/g,"go"],
@@ -804,7 +983,8 @@ const EN_MENU=[
 function parse(text){
   const drive=st.mode==="roam"||st.mode==="level";
   const src=lang==="zh"?text:text.toLowerCase(), base=lang==="zh"?ZH:EN, menu=lang==="zh"?ZH_MENU:EN_MENU;
-  const rules=drive?base:menu.concat(base), found=[];
+  const modeR=lang==="zh"?ZH_MODE:EN_MODE;
+  const rules=st.mode==="modeSel"?modeR.concat(base):drive?base:menu.concat(base), found=[];
   rules.forEach(([re,cmd])=>{ re.lastIndex=0; let m; while((m=re.exec(src))){ found.push({i:m.index,len:m[0].length,cmd}); if(!m[0].length) re.lastIndex++; } });
   found.sort((a,b)=>a.i-b.i||b.len-a.len);
   const out=[]; let end=-1; for(const f of found){ if(f.i>=end){ out.push(f.cmd); end=f.i+f.len; } }
@@ -852,6 +1032,7 @@ function tone(freqs,type,dur,vol){ if(!actx) return; freqs.forEach((f,i)=>{ cons
 function dingSound(){ tone([660,880,1320],"triangle",0.3,0.18); }
 function cpSound(){ tone([880],"triangle",0.2,0.12); }
 function honk(){ tone([392,392],"square",0.25,0.12); say("honk"); st.honkT=1.2;
+  if(st.pigeonT>0){ st.pigeonT=0; $("pigeon").hidden=true; setTimeout(()=>say("pigeonGone"),500); }
   if(st.student==="zzz"&&st.asleep&&Math.random()<0.5){ st.asleep=false; st.sleepT=7+Math.random()*4; setTimeout(()=>say("wake"),300); } }
 function startSiren(){ if(!actx||siren) return; const o=actx.createOscillator(),g=actx.createGain(); o.type="triangle"; g.gain.value=0.06; o.connect(g); g.connect(actx.destination); o.start(); siren={o,g}; }
 function stopSiren(){ if(siren){ try{ siren.o.stop(); }catch(_){} siren=null; } }
@@ -947,6 +1128,14 @@ function step(dt){
   // idle chatter
   st.chatT=(st.chatT||0)+dt;
   if(st.mode==="level"&&!st.asleep&&st.chatT>16&&!ttsBusy){ st.chatT=0; if(Math.random()<0.6) say("chat"); }
+  // funny random events
+  if((st.mode==="roam"||(st.mode==="level"&&def&&def.id>4)) && moving() && !st.asleep){
+    st.eventT=(st.eventT??25)-dt;
+    if(st.eventT<=0 && !(st.selfieT>0) && !(st.beeT>0) && !(st.pigeonT>0)){ st.eventT=26+Math.random()*18; startEvent(pick(["sneeze","selfie","pigeon","bee","sing","snack"])); }
+  }
+  if(st.selfieT>0){ st.selfieT-=dt; st.selfieDrift=(st.selfieDrift||0)-dt; if(st.selfieDrift<=0){ st.selfieDrift=1.2; if(st.turnLeft===0){ st.turnLeft=(Math.random()<0.5?-1:1)*0.12; st.nudge=true; } } }
+  if(st.beeT>0){ st.beeT-=dt; st.beeJ=(st.beeJ||0)-dt; if(st.beeJ<=0){ st.beeJ=1.4; st.idx=1+Math.floor(Math.random()*4); st.reverse=false; st.panic=Math.min(1,st.panic+0.1); } }
+  if(st.pigeonT>0){ st.pigeonT-=dt; if(st.pigeonT<=0) $("pigeon").hidden=true; }
   // personality behaviours
   if(st.student==="rush" && !st.reverse && st.idx>0){ st.autoT+=dt; if(st.autoT>5){ st.autoT=0; if(st.clock-st.lastSlow>4.5&&st.idx<4){ st.idx++; say("auto"); } } }
   if(tr.sleepy && st.mode==="level" && moving()){
@@ -979,28 +1168,96 @@ function step(dt){
   if(st.mode==="roam") for(const n of npcs){ n.s+=n.dir*n.speed*dt; if(n.s>EDGE+10)n.s=-EDGE-10; if(n.s<-EDGE-10)n.s=EDGE+10; const p=npcPos(n); n.car.position.set(p.x,0,p.z); n.car.rotation.y=n.axis==="z"?(n.dir>0?0:Math.PI):(n.dir>0?Math.PI/2:-Math.PI/2); }
   // cones flying
   for(const c of lvl.cones){ if(!c.vel) continue; c.vel.y-=22*dt; c.g.position.x+=c.vel.x*dt; c.g.position.y=Math.max(0,c.g.position.y+c.vel.y*dt); c.g.position.z+=c.vel.z*dt; c.g.rotation.x+=c.spin*dt; if(c.g.position.y<=0){c.vel.x*=0.6;c.vel.z*=0.6;c.vel.y=Math.abs(c.vel.y)*0.3;c.spin*=0.5; if(Math.abs(c.vel.x)+Math.abs(c.vel.z)<0.3) c.vel=null;} }
-  // gates
+  // gates: no forced stop; show a prompt and wait for "challenge"
   if(st.mode==="roam"){
-    let near=null; gates.forEach(g=>{ if(Math.hypot(st.x-g.x,st.z-g.z)<5) near=g; });
-    if(st.gateLock!==null && (!near||near.lv.id!==st.gateLock)){ const g=gates.find(g=>g.lv.id===st.gateLock); if(!g||Math.hypot(st.x-g.x,st.z-g.z)>9) st.gateLock=null; }
-    if(near && st.gateLock!==near.lv.id){
-      if(gateUnlocked(near.lv.id)){ st.idx=0; st.speed=0; st.turnLeft=0; st.pendingGate=near; showLevelCard(near.lv); }
-      else { toast(L().locked(near.lv.id)); st.gateLock=near.lv.id; }
+    let near=null; gates.forEach(g=>{ if(Math.hypot(st.x-g.x,st.z-g.z)<7) near=g; });
+    if(near!==st.nearGate){
+      st.nearGate=near; const gp=$("gatePrompt");
+      if(near){ gp.textContent=U().hGate(near.lv.id,near.lv[lang].t); gp.hidden=false; if(st.gateLock!==near.lv.id){ st.gateLock=near.lv.id; say("gate"); } }
+      else gp.hidden=true;
     }
+    // bubble tea
+    cups.forEach(c=>{ if(c.got) return; if(Math.hypot(st.x-c.x,st.z-c.z)<3.2){ c.got=true; c.g.visible=false; cupsGot++; dingSound(); toast(U().cupGet+"  "+cupsGot+"/"+cups.length,true); say("cup"); if(cupsGot===cups.length) setTimeout(()=>toast(U().cupsAll,true),1500); } });
+    // trash cans
+    bins.forEach(b=>{ if(b.vel) return; const dx=b.home.x-st.x, dz=b.home.z-st.z, d=Math.hypot(dx,dz);
+      if(d<1.9&&Math.abs(st.speed)>1.5){ const f=Math.max(6,Math.abs(st.speed)); b.vel={x:dx/(d||1)*f*0.7+Math.sin(st.heading)*f*0.5,y:8+f*0.35,z:dz/(d||1)*f*0.7+Math.cos(st.heading)*f*0.5}; b.spin=(Math.random()-.5)*16; b.t=0; binsHit++; crashSound(false); if(binsHit%3===1){ toast(U().binHit(binsHit),true); say("bin"); } } });
   }
+  bins.forEach(b=>{ if(!b.vel) return; b.t+=dt; b.vel.y-=22*dt; b.g.position.x+=b.vel.x*dt; b.g.position.y=Math.max(0,b.g.position.y+b.vel.y*dt); b.g.position.z+=b.vel.z*dt; b.g.rotation.x+=b.spin*dt; b.g.rotation.z+=b.spin*0.6*dt;
+    if(b.g.position.y<=0){ b.vel.x*=0.6; b.vel.z*=0.6; b.vel.y=Math.abs(b.vel.y)*0.3; b.spin*=0.5; }
+    if(b.t>15){ b.vel=null; b.g.position.set(b.home.x,0,b.home.z); b.g.rotation.set(0,0,0); } });
   if(st.mode==="level") stepLevel(dt);
 }
+
+function startEvent(kind){
+  if(kind==="sneeze"){ say("sneeze"); setTimeout(()=>{ if(st.mode==="roam"||st.mode==="level"){ st.turnLeft=(Math.random()<0.5?-1:1)*0.3; st.nudge=true; st.shake=0.3; } },900); }
+  else if(kind==="selfie"){ st.selfieT=9; say("selfie"); }
+  else if(kind==="pigeon"){ st.pigeonT=14; $("pigeon").hidden=false; say("pigeon"); }
+  else if(kind==="bee"){ st.beeT=9; st.beeJ=0.5; say("bee"); }
+  else if(kind==="sing"){ say("sing"); }
+  else say("snack");
+}
+function clearEvents(){ st.selfieT=0; st.beeT=0; st.pigeonT=0; const pg=document.getElementById("pigeon"); if(pg) pg.hidden=true; }
 
 /* ======================= HUD ======================= */
 const mini=$("mini"), mg=mini.getContext("2d");
 function currentTarget(){
   if(lvl.def){ const d=lvl.def; if(lvl.cp<d.cps.length) return {x:d.cps[lvl.cp][0],z:d.cps[lvl.cp][1]}; const f=d.finish; return {x:(f[0]+f[1])/2,z:(f[2]+f[3])/2}; }
-  let best=null,bd=1e9; gates.forEach(g=>{ if(!gateUnlocked(g.lv.id)) return; const sc=(stars[g.lv.id]?400:0)+Math.hypot(st.x-g.x,st.z-g.z); if(sc<bd){bd=sc;best=g;} }); return best?{x:best.x,z:best.z}:{x:st.x,z:st.z+1};
+  let best=null,bd=1e9;
+  cups.forEach(c=>{ if(c.got) return; const d=Math.hypot(st.x-c.x,st.z-c.z); if(d<bd){bd=d;best=c;} });
+  gates.forEach(g=>{ if(stars[g.lv.id]) return; const d=Math.hypot(st.x-g.x,st.z-g.z)+40; if(d<bd){bd=d;best=g;} });
+  return best?{x:best.x,z:best.z}:{x:st.x,z:st.z+1};
+}
+function computeHint(t,rel,dist){
+  const u=U(), def=lvl.def, stopped=Math.abs(st.speed)<0.5&&st.idx===0&&!st.reverse;
+  if(st.asleep) return [u.hSleep,"wake"];
+  if(st.pigeonT>0) return [u.hPigeon,"honk"];
+  if(st.beeT>0) return [u.hBee,"calm"];
+  if(st.selfieT>0) return [u.hSelfie,"focus"];
+  if(st.mode==="roam"&&st.nearGate) return [u.hGate(st.nearGate.lv.id,st.nearGate.lv[lang].t),"challenge"];
+  if(def){
+    const red=lvl.lights.find(l=>l.state===0&&Math.abs(st.x-l.x)<4&&l.z-st.z>0&&l.z-st.z<30);
+    if(red&&!stopped) return [u.hRed,"stop"];
+    const ped=lvl.peds.find(p=>p.state==="walk"&&p.z-st.z>0&&p.z-st.z<28);
+    if(ped&&!stopped) return [u.hPed,"stop"];
+    if(lvl.ambs.some((a,i)=>a&&!lvl.ambDone[i]&&st.z-a.z<45)) return [u.hAmb,"nudgeR"];
+    if(lvl.ducks.some(d=>!d.flee&&!d.vel&&d.z-st.z>0&&d.z-st.z<34)) return [u.hDuck,"honk"];
+    if(lvl.cp>=def.cps.length){
+      const f=def.finish, inBox=st.x>f[0]&&st.x<f[1]&&st.z>f[2]&&st.z<f[3];
+      if(inBox) return stopped?[u.hHold,"stop"]:[u.hBox,"stop"];
+      if(def.id===3&&!st.reverse&&stopped) return [u.hReverse,"reverse"];
+      if(def.id===3) return [u.hReverse,"stop"];
+      if(dist<16) return [u.hBox,"stop"];
+    }
+  }
+  if(stopped) return [u.hStart,"go"];
+  if(Math.abs(rel)>2.5) return [u.hBehind,"reverse"];
+  if(Math.abs(rel)<0.3) return [u.hStraight,"faster"];
+  const left=rel>0;
+  if(Math.abs(rel)<0.9||inYard(st.x,st.z)||dist<25) return left?[u.hNudgeL,"nudgeL"]:[u.hNudgeR,"nudgeR"];
+  const q=Math.PI/2,n=Math.round(st.heading/q)*q, alongZ=Math.abs(Math.cos(n))>0.5, dir=alongZ?Math.sign(Math.cos(n)):Math.sign(Math.sin(n));
+  const pos=alongZ?st.z:st.x; let nextI=(dir>0?Math.ceil(pos/BLOCK):Math.floor(pos/BLOCK))*BLOCK; let dI=(nextI-pos)*dir;
+  if(dI<-2){ nextI+=dir*BLOCK; dI+=BLOCK; }
+  const lead=Math.max(6,Math.abs(st.speed)*0.9+4);
+  if(dI<lead&&dI>-3) return left?[u.hNowL,"left"]:[u.hNowR,"right"];
+  return left?[u.hAheadL(Math.round(dI)),"left"]:[u.hAheadR(Math.round(dI)),"right"];
+}
+const CMD_ROWS_LEVEL=["go","faster","slower","stop","left","right","nudgeL","nudgeR","straight","reverse","honk","wake","menu"];
+function renderCmds(hot){
+  const u=U(), extra=[];
+  if(st.mode==="roam") extra.push("challenge");
+  if(st.selfieT>0) extra.push("focus"); if(st.beeT>0) extra.push("calm");
+  const keys=CMD_ROWS_LEVEL.filter(k=>k!=="wake"||st.student==="zzz"||st.asleep).concat(extra).concat(["sing"]);
+  const sig=lang+keys.join()+hot; if(renderCmds.sig===sig) return; renderCmds.sig=sig;
+  $("cmdTitle").textContent=u.cmdTitle;
+  $("cmdRows").innerHTML=keys.map(k=>{ const r=u.rows[k]; return '<div class="cmdrow'+(k===hot?" hot":"")+'"><b>'+r[0]+'</b><span>'+r[1]+'</span></div>'; }).join("");
 }
 function chip(text,cls){ return '<span class="panel chip '+(cls||"")+'">'+text+"</span>"; }
 function drawHUD(){
   const t=currentTarget(), dx=t.x-st.x, dz=t.z-st.z; let rel=Math.atan2(dx,dz)-st.heading; rel=Math.atan2(Math.sin(rel),Math.cos(rel));
   $("arrowSvg").style.transform="rotate("+(-rel)+"rad)"; $("dist").textContent=Math.round(Math.hypot(dx,dz))+" m";
+  const driving=st.mode==="roam"||st.mode==="level";
+  $("cmdPanel").hidden=!driving;
+  if(driving){ const [ht,hc]=computeHint(t,rel,Math.hypot(dx,dz)); $("hintTxt").textContent=ht; renderCmds(hc); }
   let html="";
   if(lvl.def&&st.mode==="level"){
     const d=lvl.def, tt=L();
@@ -1011,7 +1268,7 @@ function drawHUD(){
     if(d.limit) html+=chip(tt.chipLimit,Math.abs(st.speed)>d.limit?"warn":"");
     const red=lvl.lights.find(l=>l.state===0&&Math.abs(st.x-l.x)<4&&l.z-st.z>0&&l.z-st.z<35); if(red) html+=chip(tt.chipRed,"warn");
     if(st.asleep) html+=chip(tt.chipSleep,"warn");
-  }
+  } else if(st.mode==="roam"){ html+=chip(U().cups(cupsGot,cups.length),"ok"); if(binsHit) html+=chip(U().binHit(binsHit)); }
   $("chips").innerHTML=html;
   // minimap (heading-up; +z is up, +x is left)
   const S=mini.width, sc=S/190;
@@ -1020,7 +1277,8 @@ function drawHUD(){
   mg.fillStyle="#4a4f63"; for(let k=-GRID;k<=GRID;k++){ mg.fillRect(k*BLOCK-HALF,-EDGE-HALF,ROAD,EDGE*2+ROAD); mg.fillRect(-EDGE-HALF,k*BLOCK-HALF,EDGE*2+ROAD,ROAD); }
   mg.fillStyle="#c9cfdc"; mg.fillRect(YARD.x0,YARD.z0,YARD.x1-YARD.x0,YARD.z1-YARD.z0);
   if(lvl.def){ mg.fillStyle="#2fbf8f"; lvl.def.cps.forEach((c,i)=>{ if(i>=lvl.cp){ mg.beginPath(); mg.arc(c[0],c[1],i===lvl.cp?6:3.5,0,Math.PI*2); mg.fill(); } }); const f=lvl.def.finish; mg.fillStyle="#ffffff"; mg.fillRect(f[0],f[2],f[1]-f[0],f[3]-f[2]); }
-  else gates.forEach(g=>{ mg.fillStyle=gateUnlocked(g.lv.id)?(stars[g.lv.id]?"#2fbf8f":"#ffc93c"):"#9a968c"; mg.beginPath(); mg.arc(g.x,g.z,6,0,Math.PI*2); mg.fill(); });
+  else { gates.forEach(g=>{ mg.fillStyle=stars[g.lv.id]?"#2fbf8f":"#ff5a4e"; mg.beginPath(); mg.arc(g.x,g.z,5,0,Math.PI*2); mg.fill(); });
+    mg.fillStyle="#ffc93c"; cups.forEach(c=>{ if(!c.got){ mg.beginPath(); mg.arc(c.x,c.z,4,0,Math.PI*2); mg.fill(); } }); }
   mg.setTransform(1,0,0,1,0,0); mg.fillStyle="#ff8a2a"; mg.strokeStyle="#1d2340"; mg.lineWidth=3;
   mg.beginPath(); mg.moveTo(S/2,S/2-12); mg.lineTo(S/2+9,S/2+10); mg.lineTo(S/2-9,S/2+10); mg.closePath(); mg.fill(); mg.stroke();
 }
@@ -1042,7 +1300,13 @@ function frame(now){
   coach.userData.eyes.forEach(e=>e.scale.setScalar(st.cooldown>0?1.5:1));
   coach.rotation.y=st.cooldown>0?Math.sin(now/90)*0.3:0.25;
   wheelS.rotation.z=st.turnLeft*1.2;
-  gates.forEach(g=>{ g.ring.rotation.z+=dt; g.grp.visible=!lvl.def; });
+  gates.forEach(g=>{ g.ring.rotation.z+=dt; g.grp.visible=!lvl.def&&gameMode==="free"&&st.mode!=="modeSel"; });
+  cups.forEach(c=>{ if(!c.got){ c.g.rotation.y+=dt*2; c.g.position.y=1.2+Math.sin(now/300+c.x)*0.4; c.g.visible=gameMode==="free"&&!lvl.def; } });
+  bins.forEach(b=>b.g.visible=!lvl.def);
+  { const showMark=st.mode==="roam"||st.mode==="level"; const tg=currentTarget();
+    targetMark.visible=showMark; carArrow.visible=showMark;
+    if(showMark){ targetMark.position.set(tg.x,0,tg.z); targetDiamond.position.y=12+Math.sin(now/250)*1.2; targetDiamond.rotation.y+=dt*2;
+      carArrow.position.set(st.x,5.2+Math.sin(now/200)*0.25,st.z); carArrow.rotation.y=Math.atan2(tg.x-st.x,tg.z-st.z); } }
   cpMarkers.forEach(m=>{ if(m.children[1]) m.children[1].rotation.z+=dt*1.5; });
   if(rain){ const p=rain.geometry.attributes.position; for(let i=0;i<p.count;i++){ let y=p.getY(i)-40*dt; if(y<0) y+=30; p.setY(i,y); } p.needsUpdate=true; rain.position.set(st.x,0,st.z); }
   const [fx,fz]=fwd();
@@ -1057,12 +1321,12 @@ function frame(now){
 
 /* ======================= BOOT ======================= */
 $("intro").addEventListener("click",()=>{
-  $("intro").hidden=true; st.mode="roam";
+  $("intro").hidden=true;
   if(!actx) initAudio(); else if(actx.state==="suspended") actx.resume();
-  say("start"); startVoice();
+  showModeCard(); startVoice();
 });
 applyLang();
 requestAnimationFrame(frame);
-window.__game={get muted(){return muted;},speak,st,lvl,LEVELS,gates,parse,command,execute,startLevel,backToMap,setLang,stars};
+window.__game={get muted(){return muted;},get gameMode(){return gameMode;},get cupsGot(){return cupsGot;},cups,bins,computeHint,showModeCard,startLesson,startFree,startEvent,speak,st,lvl,LEVELS,gates,parse,command,execute,startLevel,backToMap,setLang,stars};
 })();
 </script>
